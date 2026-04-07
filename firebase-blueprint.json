@@ -1,0 +1,66 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "System user with specific roles and credentials.",
+      "type": "object",
+      "properties": {
+        "uid": { "type": "string" },
+        "name": { "type": "string" },
+        "role": { "type": "string", "enum": ["colaborador", "central", "admin"] },
+        "email": { "type": "string", "format": "email" }
+      },
+      "required": ["uid", "name", "role"]
+    },
+    "Appointment": {
+      "title": "Appointment",
+      "description": "Client appointment record.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "clientName": { "type": "string" },
+        "clientPhone": { "type": "string" },
+        "clientData": { "type": "string" },
+        "time": { "type": "string", "format": "date-time" },
+        "course": { "type": "string" },
+        "status": { 
+          "type": "string", 
+          "enum": ["pendente", "compareceu", "nao_compareceu", "inscreveu", "nao_fechou_matricula", "matriculado"] 
+        },
+        "observations": { "type": "string" },
+        "createdBy": { "type": "string" },
+        "creatorName": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" },
+        "rescheduledFrom": { "type": "string" }
+      },
+      "required": ["clientName", "time", "createdBy", "status"]
+    },
+    "DeletedAppointment": {
+      "title": "DeletedAppointment",
+      "description": "Archived record of a deleted appointment.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "appointmentData": { "type": "object" },
+        "deletedBy": { "type": "string" },
+        "deletedByName": { "type": "string" },
+        "deletedAt": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "firestore": {
+    "/users/{uid}": {
+      "schema": "User",
+      "description": "User profiles and roles."
+    },
+    "/appointments/{appointmentId}": {
+      "schema": "Appointment",
+      "description": "Active appointments."
+    },
+    "/deleted_appointments/{deletedId}": {
+      "schema": "DeletedAppointment",
+      "description": "History of deleted appointments."
+    }
+  }
+}

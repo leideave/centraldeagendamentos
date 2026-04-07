@@ -1,0 +1,78 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: users
+    // Document ID: uid (password in this mock)
+    // Fields:
+    //   - name: string (required)
+    //   - role: string (required, ['colaborador', 'central', 'admin'])
+    //
+    // Collection: appointments
+    // Document ID: auto-generated
+    // Fields:
+    //   - clientName: string (required)
+    //   - clientPhone: string (optional)
+    //   - clientData: string (optional)
+    //   - time: string (required, ISO 8601)
+    //   - course: string (required)
+    //   - status: string (required, ['pendente', 'compareceu', 'nao_compareceu', 'inscreveu', 'nao_fechou_matricula', 'matriculado'])
+    //   - observations: string (optional)
+    //   - createdBy: string (required, uid)
+    //   - creatorName: string (required)
+    //   - createdAt: string (required, ISO 8601)
+    //   - updatedAt: string (required, ISO 8601)
+    //   - rescheduledFrom: string (optional, appointmentId)
+    //
+    // Collection: deleted_appointments
+    // Document ID: auto-generated
+    // Fields:
+    //   - appointmentData: map (required)
+    //   - deletedBy: string (required, uid)
+    //   - deletedByName: string (required)
+    //   - deletedAt: string (required, ISO 8601)
+    //
+    // ===============================================================
+
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      // In this specific app, we use fixed passwords as UIDs. 
+      // We also check the provided admin email as a fallback/bootstrap.
+      return isAuthenticated() && 
+        (request.auth.uid == 'adm101010' || 
+         (request.auth.token.email == 'eductreina.adm@gmail.com' && request.auth.token.email_verified == true));
+    }
+
+    function isValidAppointment(data) {
+      return data.clientName is string && data.clientName.size() > 0 &&
+             data.time is string &&
+             data.status in ['pendente', 'compareceu', 'nao_compareceu', 'inscreveu', 'nao_fechou_matricula', 'matriculado'] &&
+             data.createdBy is string &&
+             data.creatorName is string;
+    }
+
+    match /users/{uid} {
+      allow read, write: if true;
+    }
+
+    match /appointments/{appointmentId} {
+      allow read, write: if true;
+    }
+
+    match /deleted_appointments/{deletedId} {
+      allow read, write: if true;
+    }
+
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
